@@ -32,6 +32,12 @@ load_model = tf.keras.models.load_model('trainedmodel')
 def main():
     return render_template('main.html')
 
+
+@app.route('/advice')
+def advice():
+    # Render the advice.html template
+    return render_template('advice.html')
+
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -40,14 +46,20 @@ def index():
 
 @app.route('/result')
 def result():
-    result_text = request.args.get('result')
-    return render_template('result.html', result_text=result_text)
+    # Get parameters from the query string or use default values
+    username = request.args.get('username', 'N/A')
+    confidence = float(request.args.get('confidence', 'N/A'))  # Ensure confidence is a float
+    behavioral_analysis = request.args.get('behavioral_analysis', 'N/A')
+
+    return render_template('result.html', username=username, confidence=confidence, behavioral_analysis=behavioral_analysis)
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
         # Get the username from the form submission
         username = request.form['username']
+        reasons = request.form.getlist('reasons')
+        others = request.form.get('others')
 
         # Get Instagram data
         insta_data = get_instagram_data(username)
@@ -59,16 +71,27 @@ def predict():
             # Make predictions
             predictions = load_model.predict(X_new)
 
+            # Get the number of checkboxes selected
+            num_checkboxes_selected = len(reasons) + (1 if others else 0)
+
+            # Perform behavioral analysis
+            behavioral_analysis_result = "Behavioral Analysis: "
+            if num_checkboxes_selected > 5:
+                behavioral_analysis_result += "The user exhibits suspicious behavior."
+            else:
+                behavioral_analysis_result += "The user's behavior seems normal."
+
             # Determine the result
-            result_text = f"Prediction for {username}: {'Fake' if predictions[0][0] >= 0.5 else 'Real'} (Probability: {predictions[0][0]:.4f})"
+            confidence_percentage = (1 - predictions[0][0]) * 100  # Subtract probability from 1 and multiply by 100
+            result_text = f"Prediction for {username}: {'Fake' if predictions[0][0] >= 0.5 else 'Real'} " \
+                          f"(Confidence: {confidence_percentage:.2f}%) - {behavioral_analysis_result}"
 
-            # Redirect to the result page with the result as a parameter
-            return redirect(url_for('result', result=result_text))
-
+            # Redirect to the result page with the result as parameters
+            return redirect(url_for('result', username=username, confidence=confidence_percentage, behavioral_analysis=behavioral_analysis_result))
         else:
-            return jsonify({"result": f"Profile with username '{username}' not found."})
+            return render_template('result.html', username='N/A', confidence='N/A', behavioral_analysis='Profile not found.')
     except Exception as e:
-        return jsonify({"result": f"An error occurred: {str(e)}"})
+        return render_template('result.html', username='N/A', confidence='N/A', behavioral_analysis=f"An error occurred: {str(e)}")
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5003)
+    app.run(debug=True, host='127.0.0.1', port=5004)
