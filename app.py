@@ -32,11 +32,14 @@ load_model = tf.keras.models.load_model('trainedmodel')
 def main():
     return render_template('main.html')
 
-
 @app.route('/advice')
 def advice():
     # Render the advice.html template
     return render_template('advice.html')
+@app.route('/about')
+def about():
+    # Render the advice.html template
+    return render_template('about.html')
 
 @app.route('/index', methods=['GET', 'POST'])
 def index():

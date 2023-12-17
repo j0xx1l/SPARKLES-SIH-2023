@@ -63,8 +63,15 @@
             margin: 0;
         }
 
-        .navbar__item {
-            padding: 5px;
+        .navbar__items {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: x-large;
         }
 
         .navbar__links {
@@ -184,13 +191,18 @@ footer {
         </div>
         <nav>
             <ul class="navbar__menu">
-                <ul>
+                
                     <!-- Other navigation items -->
-                    <li><a href="{{ url_for('advice') }}">FAQs</a></li>
-                </ul>
-                <li class="navbar__item">
-                    <a href="/about.html" class="navbar__links">About</a>
-                </li>
+                 
+                        <li class="navbar__items"><a href="{{ url_for('advice') }}">FAQs</a></li>
+                        <li class="navbar__items"><a href="{{ url_for('about') }}">About</a></li>
+                  
+                
+                
+                    <!-- Other navigation items -->
+                    
+                
+                
             </ul>
         </nav>
     </header>
